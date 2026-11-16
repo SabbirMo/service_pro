@@ -20,16 +20,20 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(dashboardNotifierProvider);
+    final isKeyboardOpen = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       extendBody: true,
+      resizeToAvoidBottomInset: false,
       body: IndexedStack(index: currentIndex, children: _views),
-      bottomNavigationBar: CustomNavBar(
-        selectedIndex: currentIndex,
-        onItemSelected: (index) {
-          ref.read(dashboardNotifierProvider.notifier).setIndex(index);
-        },
-      ),
+      bottomNavigationBar: isKeyboardOpen
+          ? null
+          : CustomNavBar(
+              selectedIndex: currentIndex,
+              onItemSelected: (index) {
+                ref.read(dashboardNotifierProvider.notifier).setIndex(index);
+              },
+            ),
     );
   }
 }
