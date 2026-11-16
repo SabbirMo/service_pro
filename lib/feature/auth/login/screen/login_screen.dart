@@ -30,7 +30,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _onSignIn() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Handle login action
+      context.go(AppPageName.dashboardScreen);
     }
   }
 

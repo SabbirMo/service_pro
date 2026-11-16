@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:service_pro/feature/auth/login/screen/login_screen.dart';
 import 'package:service_pro/feature/auth/register/screen/register_screen.dart';
+import 'package:service_pro/feature/dashboard/screen/dashboard_screen.dart';
 import 'package:service_pro/feature/splash/splash_screen.dart';
 import 'package:service_pro/router/app_page_name.dart';
 
@@ -25,6 +26,11 @@ final AppPages = Provider<GoRouter>((ref) {
         path: AppPageName.registerScreen,
         pageBuilder: (context, state) =>
             CupertinoPage(child: const RegisterScreen()),
+      ),
+      GoRoute(
+        path: AppPageName.dashboardScreen,
+        pageBuilder: (context, state) =>
+            CupertinoPage(child: const DashboardScreen()),
       ),
     ],
     errorBuilder: (context, state) =>

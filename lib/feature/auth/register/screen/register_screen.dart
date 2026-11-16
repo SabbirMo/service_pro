@@ -32,7 +32,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   void _onRegister() {
     if (_formKey.currentState?.validate() ?? false) {
-      // Handle registration logic
+      context.go(AppPageName.dashboardScreen);
     }
   }
 
