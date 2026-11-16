@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:service_pro/core/theme/app_colors.dart';
 
 class CustomButton extends StatelessWidget {
   final String text;
@@ -35,8 +36,8 @@ class CustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = backgroundColor ?? const Color(0xFF4F46E5);
-    final fgColor = foregroundColor ?? Colors.white;
+    final bgColor = backgroundColor ?? AppColors.primary;
+    final fgColor = foregroundColor ?? AppColors.white;
 
     return SizedBox(
       width: width ?? double.infinity,

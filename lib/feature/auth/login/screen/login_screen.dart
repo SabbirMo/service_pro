@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:service_pro/core/theme/app_colors.dart';
+import 'package:service_pro/core/utils/app_validator.dart';
 import 'package:service_pro/core/widgets/custom_button.dart';
 import 'package:service_pro/core/widgets/custom_text_field.dart';
 import 'package:service_pro/feature/auth/login/provider/login_notifier.dart';
+import 'package:service_pro/router/app_page_name.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -35,7 +39,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final notifer = ref.watch(loginNotifierProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -54,14 +58,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       gradient: const LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF4F46E5), Color(0xFF6366F1)],
+                        colors: [AppColors.primary, AppColors.primaryLight],
                       ),
                       borderRadius: BorderRadius.circular(15.r),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(
-                            0xFF4F46E5,
-                          ).withValues(alpha: 0.35),
+                          color: AppColors.primary.withValues(alpha: 0.35),
                           blurRadius: 14,
                           offset: const Offset(0, 6),
                         ),
@@ -70,7 +72,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     child: Center(
                       child: Icon(
                         Icons.home_repair_service_rounded,
-                        color: Colors.white,
+                        color: AppColors.white,
                         size: 26.sp,
                       ),
                     ),
@@ -84,7 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     style: TextStyle(
                       fontSize: 24.sp,
                       fontWeight: FontWeight.w800,
-                      color: const Color(0xFF0F172A),
+                      color: AppColors.textPrimary,
                       letterSpacing: -0.4,
                     ),
                   ),
@@ -96,7 +98,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     "Sign in to book trusted home & lifestyle services.",
                     style: TextStyle(
                       fontSize: 13.5.sp,
-                      color: const Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w400,
                       height: 1.35,
                     ),
@@ -111,12 +113,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     textInputAction: TextInputAction.next,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return "Email is required";
-                      }
-                      return null;
-                    },
+                    validator: AppValidator.validateEmail,
                   ),
 
                   SizedBox(height: 20.h),
@@ -128,16 +125,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     controller: _passwordController,
                     obscureText: !notifer.password,
                     textInputAction: TextInputAction.done,
-
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return "Password is required";
-                      }
-                      if (value.length < 6) {
-                        return "Minimum 6 characters required";
-                      }
-                      return null;
-                    },
+                    validator: AppValidator.validatePassword,
                     suffixIcon: IconButton(
                       onPressed: () {
                         ref
@@ -148,7 +136,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         notifer.password
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
-                        color: const Color(0xFF94A3B8),
+                        color: AppColors.textMuted,
                         size: 20.sp,
                       ),
                     ),
@@ -169,19 +157,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         "Don't have an account? ",
                         style: TextStyle(
                           fontSize: 13.5.sp,
-                          color: const Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
                       GestureDetector(
                         onTap: () {
-                          // Navigate to Register Screen
+                          context.push(AppPageName.registerScreen);
                         },
                         child: Text(
                           "Register",
                           style: TextStyle(
                             fontSize: 13.5.sp,
-                            color: const Color(0xFF4F46E5),
+                            color: AppColors.primary,
                             fontWeight: FontWeight.w700,
                           ),
                         ),

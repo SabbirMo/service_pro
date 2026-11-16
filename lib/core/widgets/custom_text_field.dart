@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:service_pro/core/theme/app_colors.dart';
 
 class CustomTextField extends StatelessWidget {
   final String? label;
   final String? hintText;
   final TextEditingController? controller;
-  final bool isPassword;
   final bool obscureText;
   final TextInputType keyboardType;
   final TextInputAction textInputAction;
@@ -21,7 +21,6 @@ class CustomTextField extends StatelessWidget {
     this.label,
     this.hintText,
     this.controller,
-    this.isPassword = false,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.textInputAction = TextInputAction.next,
@@ -39,9 +38,17 @@ class CustomTextField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(label ?? ""),
-        SizedBox(height: 4.h),
-
+        if (label != null) ...[
+          Text(
+            label!,
+            style: TextStyle(
+              fontSize: 13.5.sp,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textDark,
+            ),
+          ),
+          SizedBox(height: 6.h),
+        ],
         TextFormField(
           controller: controller,
           obscureText: obscureText,
@@ -54,17 +61,17 @@ class CustomTextField extends StatelessWidget {
           style: TextStyle(
             fontSize: 14.sp,
             fontWeight: FontWeight.w500,
-            color: const Color(0xFF0F172A),
+            color: AppColors.textPrimary,
           ),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: TextStyle(
               fontSize: 14.sp,
-              color: const Color(0xFF94A3B8),
+              color: AppColors.textMuted,
               fontWeight: FontWeight.w400,
             ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: AppColors.surface,
             contentPadding: EdgeInsets.symmetric(
               horizontal: 16.w,
               vertical: 14.h,
@@ -74,35 +81,35 @@ class CustomTextField extends StatelessWidget {
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14.r),
               borderSide: const BorderSide(
-                color: Color(0xFFE2E8F0),
+                color: AppColors.border,
                 width: 1.2,
               ),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14.r),
               borderSide: const BorderSide(
-                color: Color(0xFFE2E8F0),
+                color: AppColors.border,
                 width: 1.2,
               ),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14.r),
               borderSide: const BorderSide(
-                color: Color(0xFF4F46E5),
+                color: AppColors.primary,
                 width: 1.5,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14.r),
               borderSide: const BorderSide(
-                color: Color(0xFFEF4444),
+                color: AppColors.error,
                 width: 1.2,
               ),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14.r),
               borderSide: const BorderSide(
-                color: Color(0xFFEF4444),
+                color: AppColors.error,
                 width: 1.5,
               ),
             ),
