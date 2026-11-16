@@ -53,16 +53,4 @@ class AppValidator {
     }
     return null;
   }
-
-  /// Validates Phone Number
-  static String? validatePhone(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return "Phone number is required";
-    }
-    final phoneRegex = RegExp(r'^\+?[0-9]{10,14}$');
-    if (!phoneRegex.hasMatch(value.trim())) {
-      return "Enter a valid phone number";
-    }
-    return null;
-  }
 }

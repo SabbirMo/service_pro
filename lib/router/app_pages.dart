@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:service_pro/feature/auth/login/screen/login_screen.dart';
 import 'package:service_pro/feature/auth/register/screen/register_screen.dart';
 import 'package:service_pro/feature/dashboard/screen/dashboard_screen.dart';
+import 'package:service_pro/feature/profile/screen/change_password_screen.dart';
+import 'package:service_pro/feature/profile/screen/edit_profile_screen.dart';
 import 'package:service_pro/feature/splash/splash_screen.dart';
 import 'package:service_pro/router/app_page_name.dart';
 
@@ -31,6 +33,16 @@ final AppPages = Provider<GoRouter>((ref) {
         path: AppPageName.dashboardScreen,
         pageBuilder: (context, state) =>
             CupertinoPage(child: const DashboardScreen()),
+      ),
+      GoRoute(
+        path: AppPageName.editProfileScreen,
+        pageBuilder: (context, state) =>
+            CupertinoPage(child: const EditProfileScreen()),
+      ),
+      GoRoute(
+        path: AppPageName.changePasswordScreen,
+        pageBuilder: (context, state) =>
+            CupertinoPage(child: const ChangePasswordScreen()),
       ),
     ],
     errorBuilder: (context, state) =>
