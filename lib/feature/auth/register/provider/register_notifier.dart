@@ -12,5 +12,5 @@ class RegisterNotifier extends Notifier<RegisterState> {
 
 final registerNotifierProvider =
     NotifierProvider.autoDispose<RegisterNotifier, RegisterState>(
-      RegisterNotifier.new,
-    );
+  RegisterNotifier.new,
+);

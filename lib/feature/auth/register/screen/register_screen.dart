@@ -7,6 +7,7 @@ import 'package:service_pro/core/utils/app_validator.dart';
 import 'package:service_pro/core/widgets/custom_button.dart';
 import 'package:service_pro/core/widgets/custom_text_field.dart';
 import 'package:service_pro/feature/auth/register/provider/register_notifier.dart';
+import 'package:service_pro/feature/auth/register/provider/register_provider.dart';
 import 'package:service_pro/router/app_page_name.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -30,15 +31,44 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     super.dispose();
   }
 
-  void _onRegister() {
+  Future<void> _onRegister() async {
     if (_formKey.currentState?.validate() ?? false) {
-      context.go(AppPageName.dashboardScreen);
+      final success = await ref
+          .read(registerProvider.notifier)
+          .register(
+            name: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Registration successful!"),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        context.go(AppPageName.dashboardScreen);
+      } else {
+        final error = ref.read(registerProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error != null ? error.toString() : "Registration failed",
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final notifer = ref.watch(registerNotifierProvider);
+    final registerState = ref.watch(registerProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -161,7 +191,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   // Register / Sign Up Button
                   CustomButton(
                     text: "Sign Up",
-                    isLoading: notifer.isLoading,
+                    isLoading: registerState.isLoading,
                     onPressed: _onRegister,
                   ),
 
