@@ -36,18 +36,29 @@ class _ChangePasswordScreenState extends ConsumerState<ChangePasswordScreen> {
       final success = await ref
           .read(profileNotifierProvider.notifier)
           .changePassword(
-            currentPassword: _currentPasswordController.text,
-            newPassword: _newPasswordController.text,
+            currentPassword: _currentPasswordController.text.trim(),
+            newPassword: _newPasswordController.text.trim(),
+            confirmPassword: _confirmPasswordController.text.trim(),
           );
 
-      if (success && mounted) {
+      if (!mounted) return;
+
+      if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("Password changed successfully!"),
-            backgroundColor: AppColors.primary,
+            backgroundColor: AppColors.success,
           ),
         );
         context.pop();
+      } else {
+        final error = ref.read(profileNotifierProvider).errorMessage;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? "Failed to change password"),
+            backgroundColor: AppColors.error,
+          ),
+        );
       }
     }
   }

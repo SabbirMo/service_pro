@@ -69,28 +69,42 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     }
   }
 
-  void _onSave() {
+  Future<void> _onSave() async {
     if (_formKey.currentState?.validate() ?? false) {
-      ref.read(profileNotifierProvider.notifier).updatePersonalInfo(
+      final success = await ref
+          .read(profileNotifierProvider.notifier)
+          .editProfile(
             name: _nameController.text.trim(),
             address: _addressController.text.trim(),
-            imagePath: _imagePath,
+            image: _imagePath,
           );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Profile updated successfully!"),
-          backgroundColor: AppColors.primary,
-        ),
-      );
+      if (!mounted) return;
 
-      context.pop();
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Profile updated successfully!"),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        context.pop();
+      } else {
+        final error = ref.read(profileNotifierProvider).errorMessage;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error ?? "Failed to update profile"),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final user = ref.watch(profileNotifierProvider).user;
+    final profileState = ref.watch(profileNotifierProvider);
+    final user = profileState.user;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -163,6 +177,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                 // Save Changes Button
                 CustomButton(
                   text: "Save Changes",
+                  isLoading: profileState.isLoading,
                   onPressed: _onSave,
                 ),
               ],
@@ -178,7 +193,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     ImageProvider? imageProvider;
     if (hasImage) {
-      if (kIsWeb) {
+      if (kIsWeb || _imagePath!.startsWith('http')) {
         imageProvider = NetworkImage(_imagePath!);
       } else {
         imageProvider = FileImage(File(_imagePath!));

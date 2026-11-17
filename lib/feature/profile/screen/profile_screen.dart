@@ -95,7 +95,7 @@ class ProfileScreen extends ConsumerWidget {
     final hasImage = user.imagePath != null && user.imagePath!.isNotEmpty;
     ImageProvider? imageProvider;
     if (hasImage) {
-      if (kIsWeb) {
+      if (kIsWeb || user.imagePath!.startsWith('http')) {
         imageProvider = NetworkImage(user.imagePath!);
       } else {
         imageProvider = FileImage(File(user.imagePath!));
@@ -117,126 +117,132 @@ class ProfileScreen extends ConsumerWidget {
         elevation: 0,
         centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-        child: Column(
-          children: [
-            // User Avatar Card
-            Container(
-              padding: EdgeInsets.all(16.r),
-              decoration: BoxDecoration(
-                color: AppColors.surface,
-                borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: AppColors.border, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.03),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 56.w,
-                    height: 56.w,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: AppColors.primary,
-                      image: hasImage
-                          ? DecorationImage(
-                              image: imageProvider!,
-                              fit: BoxFit.cover,
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(profileNotifierProvider.notifier).fetchUserProfile();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+          child: Column(
+            children: [
+              // User Avatar Card
+              Container(
+                padding: EdgeInsets.all(16.r),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(color: AppColors.border, width: 1),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 56.w,
+                      height: 56.w,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primary,
+                        image: hasImage
+                            ? DecorationImage(
+                                image: imageProvider!,
+                                fit: BoxFit.cover,
+                              )
+                            : null,
+                      ),
+                      child: !hasImage
+                          ? Center(
+                              child: Text(
+                                initialLetter,
+                                style: TextStyle(
+                                  fontSize: 22.sp,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.white,
+                                ),
+                              ),
                             )
                           : null,
                     ),
-                    child: !hasImage
-                        ? Center(
-                            child: Text(
-                              initialLetter,
-                              style: TextStyle(
-                                fontSize: 22.sp,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.white,
-                              ),
+                    SizedBox(width: 14.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            user.name,
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
                             ),
-                          )
-                        : null,
-                  ),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          user.name,
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textPrimary,
                           ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          user.email,
-                          style: TextStyle(
-                            fontSize: 12.5.sp,
-                            color: AppColors.textSecondary,
+                          SizedBox(height: 4.h),
+                          Text(
+                            user.email,
+                            style: TextStyle(
+                              fontSize: 12.5.sp,
+                              color: AppColors.textSecondary,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.edit_outlined,
-                      size: 20.sp,
-                      color: AppColors.primary,
+                    IconButton(
+                      icon: Icon(
+                        Icons.edit_outlined,
+                        size: 20.sp,
+                        color: AppColors.primary,
+                      ),
+                      onPressed: () {
+                        context.push(AppPageName.editProfileScreen);
+                      },
                     ),
-                    onPressed: () {
-                      context.push(AppPageName.editProfileScreen);
-                    },
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            SizedBox(height: 24.h),
+              SizedBox(height: 24.h),
 
-            // Profile Options
-            _buildProfileOption(
-              icon: Icons.person_outline_rounded,
-              title: "Personal Information",
-              subtitle: "View and update your personal details",
-              onTap: () {
-                context.push(AppPageName.editProfileScreen);
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.lock_outline_rounded,
-              title: "Change Password",
-              subtitle: "Update your login password",
-              onTap: () {
-                context.push(AppPageName.changePasswordScreen);
-              },
-            ),
-            _buildProfileOption(
-              icon: Icons.help_outline_rounded,
-              title: "Help & Support",
-              subtitle: "FAQs, contact customer care",
-              onTap: () {},
-            ),
-            _buildProfileOption(
-              icon: Icons.logout_rounded,
-              title: "Log Out",
-              subtitle: "Sign out from this device",
-              isDestructive: true,
-              onTap: () => _showLogoutDialog(context, ref),
-            ),
+              // Profile Options
+              _buildProfileOption(
+                icon: Icons.person_outline_rounded,
+                title: "Personal Information",
+                subtitle: "View and update your personal details",
+                onTap: () {
+                  context.push(AppPageName.editProfileScreen);
+                },
+              ),
+              _buildProfileOption(
+                icon: Icons.lock_outline_rounded,
+                title: "Change Password",
+                subtitle: "Update your login password",
+                onTap: () {
+                  context.push(AppPageName.changePasswordScreen);
+                },
+              ),
+              _buildProfileOption(
+                icon: Icons.help_outline_rounded,
+                title: "Help & Support",
+                subtitle: "FAQs, contact customer care",
+                onTap: () {},
+              ),
+              _buildProfileOption(
+                icon: Icons.logout_rounded,
+                title: "Log Out",
+                subtitle: "Sign out from this device",
+                isDestructive: true,
+                onTap: () => _showLogoutDialog(context, ref),
+              ),
 
-            SizedBox(height: 90.h),
-          ],
+              SizedBox(height: 90.h),
+            ],
+          ),
         ),
       ),
     );
