@@ -5,13 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:service_pro/core/theme/app_colors.dart';
+import 'package:service_pro/feature/auth/logout/provider/logout_provider.dart';
 import 'package:service_pro/feature/profile/provider/profile_notifier.dart';
 import 'package:service_pro/router/app_page_name.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (dialogContext) {
@@ -53,9 +54,15 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
             ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(dialogContext).pop();
-                context.go(AppPageName.loginScreen);
+                final success = await ref
+                    .read(logoutProvider.notifier)
+                    .logout();
+
+                if (success && context.mounted) {
+                  context.go(AppPageName.loginScreen);
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.error,
@@ -225,7 +232,7 @@ class ProfileScreen extends ConsumerWidget {
               title: "Log Out",
               subtitle: "Sign out from this device",
               isDestructive: true,
-              onTap: () => _showLogoutDialog(context),
+              onTap: () => _showLogoutDialog(context, ref),
             ),
 
             SizedBox(height: 90.h),

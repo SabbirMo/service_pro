@@ -7,6 +7,7 @@ import 'package:service_pro/core/utils/app_validator.dart';
 import 'package:service_pro/core/widgets/custom_button.dart';
 import 'package:service_pro/core/widgets/custom_text_field.dart';
 import 'package:service_pro/feature/auth/login/provider/login_notifier.dart';
+import 'package:service_pro/feature/auth/login/provider/login_provider.dart';
 import 'package:service_pro/router/app_page_name.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -28,15 +29,43 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     super.dispose();
   }
 
-  void _onSignIn() {
+  Future<void> _onSignIn() async {
     if (_formKey.currentState?.validate() ?? false) {
-      context.go(AppPageName.dashboardScreen);
+      final success = await ref
+          .read(loginProvider.notifier)
+          .login(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
+
+      if (!mounted) return;
+
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Login successful!"),
+            backgroundColor: AppColors.success,
+          ),
+        );
+        context.go(AppPageName.dashboardScreen);
+      } else {
+        final error = ref.read(loginProvider).error;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error != null ? error.toString() : "Login failed",
+            ),
+            backgroundColor: AppColors.error,
+          ),
+        );
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final notifer = ref.watch(loginNotifierProvider);
+    final loginState = ref.watch(loginProvider);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -145,7 +174,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   SizedBox(height: 26.h),
 
                   // Sign In Button
-                  CustomButton(text: "Sign In", onPressed: _onSignIn),
+                  CustomButton(
+                    text: "Sign In",
+                    isLoading: loginState.isLoading,
+                    onPressed: _onSignIn,
+                  ),
 
                   SizedBox(height: 28.h),
 

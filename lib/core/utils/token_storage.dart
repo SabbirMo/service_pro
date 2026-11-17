@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TokenStorage {
@@ -31,6 +33,17 @@ class TokenStorage {
     await _storage.write(key: _refreshTokenKey, value: token);
   }
 
+  /// Save both tokens
+  static Future<void> saveTokens({
+    required String accessToken,
+    String? refreshToken,
+  }) async {
+    await saveAccessToken(accessToken);
+    if (refreshToken != null && refreshToken.isNotEmpty) {
+      await saveRefreshToken(refreshToken);
+    }
+  }
+
   /// Clear all stored tokens (on logout or session expiration)
   static Future<void> clearTokens() async {
     await _storage.delete(key: _accessTokenKey);
@@ -41,5 +54,35 @@ class TokenStorage {
   static Future<bool> hasAccessToken() async {
     final token = await getAccessToken();
     return token != null && token.isNotEmpty;
+  }
+
+  static Future<bool> hasValidAccessToken() async {
+    final token = await getAccessToken();
+
+    if (token == null || token.isEmpty) {
+      return false;
+    }
+
+    final parts = token.split('.');
+    if (parts.length != 3) {
+      return false;
+    }
+
+    try {
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      );
+
+      if (payload is! Map<String, dynamic> || payload['exp'] is! num) {
+        return false;
+      }
+
+      final expiry = DateTime.fromMillisecondsSinceEpoch(
+        (payload['exp'] as num).toInt() * 1000,
+      );
+      return expiry.isAfter(DateTime.now());
+    } on FormatException {
+      return false;
+    }
   }
 }

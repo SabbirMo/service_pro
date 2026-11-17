@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:service_pro/core/theme/app_colors.dart';
+import 'package:service_pro/core/utils/token_storage.dart';
 import 'package:service_pro/router/app_page_name.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -17,11 +18,24 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: 3), _redirectBasedOnToken);
+  }
+
+  Future<void> _redirectBasedOnToken() async {
+    final hasValidToken = await TokenStorage.hasValidAccessToken();
+
+    if (!mounted) {
+      return;
+    }
+
+    if (hasValidToken) {
+      context.pushReplacement(AppPageName.dashboardScreen);
+    } else {
+      await TokenStorage.clearTokens();
       if (mounted) {
         context.pushReplacement(AppPageName.loginScreen);
       }
-    });
+    }
   }
 
   @override

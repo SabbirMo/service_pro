@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:service_pro/core/utils/token_storage.dart';
 import 'package:service_pro/feature/auth/register/model/register_request_model.dart';
 import 'package:service_pro/feature/auth/register/repository/register_repository.dart';
 
@@ -25,12 +26,27 @@ class RegisterProvider extends AsyncNotifier<void> {
         password: password,
       );
 
-      await repository.register(request);
+      final response = await repository.register(request);
+      final data = response.data;
+
+      if (data is Map<String, dynamic>) {
+        final accessToken = data['accessToken'];
+        final refreshToken = data['refreshToken'];
+
+        if (accessToken is String && accessToken.isNotEmpty) {
+          await TokenStorage.saveAccessToken(accessToken);
+        }
+
+        if (refreshToken is String && refreshToken.isNotEmpty) {
+          await TokenStorage.saveRefreshToken(refreshToken);
+        }
+      }
     });
 
     return !state.hasError;
   }
 }
 
-final registerProvider =
-    AsyncNotifierProvider<RegisterProvider, void>(RegisterProvider.new);
+final registerProvider = AsyncNotifierProvider<RegisterProvider, void>(
+  RegisterProvider.new,
+);
