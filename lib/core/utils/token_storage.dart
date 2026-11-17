@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class TokenStorage {
@@ -15,22 +14,34 @@ class TokenStorage {
 
   /// Get Access Token
   static Future<String?> getAccessToken() async {
-    return await _storage.read(key: _accessTokenKey);
+    try {
+      return await _storage.read(key: _accessTokenKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Save Access Token
   static Future<void> saveAccessToken(String token) async {
-    await _storage.write(key: _accessTokenKey, value: token);
+    try {
+      await _storage.write(key: _accessTokenKey, value: token);
+    } catch (_) {}
   }
 
   /// Get Refresh Token
   static Future<String?> getRefreshToken() async {
-    return await _storage.read(key: _refreshTokenKey);
+    try {
+      return await _storage.read(key: _refreshTokenKey);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// Save Refresh Token
   static Future<void> saveRefreshToken(String token) async {
-    await _storage.write(key: _refreshTokenKey, value: token);
+    try {
+      await _storage.write(key: _refreshTokenKey, value: token);
+    } catch (_) {}
   }
 
   /// Save both tokens
@@ -46,32 +57,36 @@ class TokenStorage {
 
   /// Clear all stored tokens (on logout or session expiration)
   static Future<void> clearTokens() async {
-    await _storage.delete(key: _accessTokenKey);
-    await _storage.delete(key: _refreshTokenKey);
+    try {
+      await _storage.delete(key: _accessTokenKey);
+      await _storage.delete(key: _refreshTokenKey);
+    } catch (_) {}
   }
 
   /// Check if an access token exists
   static Future<bool> hasAccessToken() async {
     final token = await getAccessToken();
-    return token != null && token.isNotEmpty;
+    return token != null && token.trim().isNotEmpty;
   }
 
+  /// Check if access token is locally valid (JWT format and not expired)
   static Future<bool> hasValidAccessToken() async {
-    final token = await getAccessToken();
-
-    if (token == null || token.isEmpty) {
-      return false;
-    }
-
-    final parts = token.split('.');
-    if (parts.length != 3) {
-      return false;
-    }
-
     try {
-      final payload = jsonDecode(
-        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
-      );
+      final token = await getAccessToken();
+
+      if (token == null || token.trim().isEmpty) {
+        return false;
+      }
+
+      final parts = token.split('.');
+      if (parts.length != 3) {
+        return false;
+      }
+
+      // Safe base64Url decoding of JWT payload
+      final normalized = base64Url.normalize(parts[1]);
+      final payloadString = utf8.decode(base64Url.decode(normalized));
+      final payload = jsonDecode(payloadString);
 
       if (payload is! Map<String, dynamic> || payload['exp'] is! num) {
         return false;
@@ -80,8 +95,10 @@ class TokenStorage {
       final expiry = DateTime.fromMillisecondsSinceEpoch(
         (payload['exp'] as num).toInt() * 1000,
       );
-      return expiry.isAfter(DateTime.now());
-    } on FormatException {
+
+      // Return true if expiry is in the future (with 15s grace buffer)
+      return expiry.isAfter(DateTime.now().add(const Duration(seconds: 15)));
+    } catch (_) {
       return false;
     }
   }
