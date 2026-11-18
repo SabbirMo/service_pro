@@ -7,4 +7,5 @@ class AppPageName {
   static const changePasswordScreen = "/changePasswordScreen";
   static const serviceDetailScreen = "/serviceDetailScreen";
   static const bookingSlotScreen = "/bookingSlotScreen";
+  static const bookingDetailsScreen = "/bookingDetailsScreen";
 }

@@ -127,26 +127,7 @@ class TimeSlotGrid extends StatelessWidget {
         return Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: () {
-              if (isBooked) {
-                ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      "${slot.timeSlot} is already booked. Please choose an available slot.",
-                    ),
-                    backgroundColor: const Color(0xFF334155),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.r),
-                    ),
-                    duration: const Duration(seconds: 2),
-                  ),
-                );
-                return;
-              }
-              onSlotSelected(slot);
-            },
+            onTap: isBooked ? null : () => onSlotSelected(slot),
             borderRadius: BorderRadius.circular(14.r),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
@@ -162,9 +143,9 @@ class TimeSlotGrid extends StatelessWidget {
                   color: isBooked
                       ? const Color(0xFFE2E8F0)
                       : (isSelected
-                          ? AppColors.primary
-                          : const Color(0xFFE2E8F0)),
-                  width: isSelected ? 1.6 : 1.2,
+                          ? const Color(0xFF1E56A0)
+                          : const Color(0xFF1E56A0).withValues(alpha: 0.4)),
+                  width: isSelected ? 1.8 : 1.2,
                 ),
                 boxShadow: isSelected
                     ? [

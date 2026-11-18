@@ -4,24 +4,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:service_pro/core/theme/app_colors.dart';
-import 'package:service_pro/feature/booking_slot/model/available_slot_model.dart';
 import 'package:service_pro/feature/booking_slot/provider/booking_slot_notifier.dart';
+import 'package:service_pro/feature/booking_slot/repository/booking_slot_repository.dart';
 import 'package:service_pro/feature/booking_slot/widgets/booking_bottom_bar.dart';
+import 'package:service_pro/feature/booking_slot/widgets/booking_success_dialog.dart';
 import 'package:service_pro/feature/booking_slot/widgets/date_picker_strip.dart';
 import 'package:service_pro/feature/booking_slot/widgets/service_address_field.dart';
 import 'package:service_pro/feature/booking_slot/widgets/special_instructions_field.dart';
 import 'package:service_pro/feature/booking_slot/widgets/time_slot_grid.dart';
 import 'package:service_pro/feature/home/model/service_model.dart';
 import 'package:service_pro/feature/profile/provider/profile_notifier.dart';
-import 'package:service_pro/router/app_page_name.dart';
 
 class BookingSlotScreen extends ConsumerStatefulWidget {
   final ServiceModel service;
 
-  const BookingSlotScreen({
-    super.key,
-    required this.service,
-  });
+  const BookingSlotScreen({super.key, required this.service});
 
   @override
   ConsumerState<BookingSlotScreen> createState() => _BookingSlotScreenState();
@@ -55,8 +52,9 @@ class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
   }
 
   Future<void> _handleConfirmBooking() async {
-    final state =
-        ref.read(bookingSlotNotifierProvider(widget.service.id)).value;
+    final state = ref
+        .read(bookingSlotNotifierProvider(widget.service.id))
+        .value;
     if (state == null) return;
 
     final selectedSlot = state.selectedSlot;
@@ -122,8 +120,9 @@ class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
     }
 
     final enteredNotes = _notesController.text.trim();
-    final notifier =
-        ref.read(bookingSlotNotifierProvider(widget.service.id).notifier);
+    final notifier = ref.read(
+      bookingSlotNotifierProvider(widget.service.id).notifier,
+    );
 
     final result = await notifier.confirmBooking(
       address: enteredAddress,
@@ -163,7 +162,14 @@ class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
           duration: const Duration(seconds: 3),
         ),
       );
-      context.go(AppPageName.dashboardScreen);
+
+      BookingSuccessDialog.show(
+        context,
+        bookingId: result.bookingId,
+        serviceName: widget.service.name,
+        date: BookingSlotRepository.formatDate(state.selectedDate),
+        timeSlot: selectedSlot.timeSlot,
+      );
     } else {
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -201,10 +207,12 @@ class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final asyncSlotState =
-        ref.watch(bookingSlotNotifierProvider(widget.service.id));
-    final slotNotifier =
-        ref.read(bookingSlotNotifierProvider(widget.service.id).notifier);
+    final asyncSlotState = ref.watch(
+      bookingSlotNotifierProvider(widget.service.id),
+    );
+    final slotNotifier = ref.read(
+      bookingSlotNotifierProvider(widget.service.id).notifier,
+    );
 
     final slotData = asyncSlotState.value;
     final selectedDate = slotData?.selectedDate ?? DateTime.now();

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:service_pro/feature/auth/login/screen/login_screen.dart';
 import 'package:service_pro/feature/auth/register/screen/register_screen.dart';
+import 'package:service_pro/feature/booking/model/booking_model.dart';
+import 'package:service_pro/feature/booking/screen/booking_details_screen.dart';
 import 'package:service_pro/feature/booking_slot/screen/booking_slot_screen.dart';
 import 'package:service_pro/feature/dashboard/screen/dashboard_screen.dart';
 import 'package:service_pro/feature/home/model/service_model.dart';
@@ -92,6 +94,34 @@ final AppPages = Provider<GoRouter>((ref) {
                   "No service selected. Please choose a service to book.",
                 ),
               ),
+            ),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppPageName.bookingDetailsScreen,
+        pageBuilder: (context, state) {
+          final extra = state.extra;
+          String bookingId = '';
+          BookingModel? initialBooking;
+
+          if (extra is String) {
+            bookingId = extra;
+          } else if (extra is BookingModel) {
+            bookingId = extra.id;
+            initialBooking = extra;
+          } else if (extra is Map<String, dynamic>) {
+            bookingId = (extra['bookingId'] ?? extra['id'] ?? '').toString();
+            if (extra['booking'] is BookingModel) {
+              initialBooking = extra['booking'] as BookingModel;
+            }
+          }
+
+          return CupertinoPage(
+            key: state.pageKey,
+            child: BookingDetailsScreen(
+              bookingId: bookingId,
+              initialBooking: initialBooking,
             ),
           );
         },

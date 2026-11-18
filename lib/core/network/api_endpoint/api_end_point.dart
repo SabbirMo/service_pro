@@ -18,6 +18,9 @@ class ApiEndPoints {
   // Booking endpoints
   static const String availableSlots = '/api/bookings/available-slots';
   static const String bookings = '/api/bookings';
+  static const String myBookings = '/api/bookings/my-bookings';
+  static String bookingDetail(String id) => '/api/bookings/$id';
+  static String cancelBooking(String id) => '/api/bookings/$id/cancel';
 
   // AI Assistant endpoint
   static const String aiChat = '/api/ai/chat';

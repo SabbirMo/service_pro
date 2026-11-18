@@ -91,13 +91,17 @@ class BookingSlotNotifier extends AsyncNotifier<BookingSlotState> {
   }
 
   /// Submit / Confirm booking: POST /api/bookings
-  Future<({bool success, String? message})> confirmBooking({
+  Future<({bool success, String? message, String? bookingId})> confirmBooking({
     required String address,
     String? notes,
   }) async {
     final current = state.value;
     if (current == null || current.selectedSlot == null) {
-      return (success: false, message: 'Please select an available time slot.');
+      return (
+        success: false,
+        message: 'Please select an available time slot.',
+        bookingId: null,
+      );
     }
 
     state = AsyncData(current.copyWith(
@@ -106,13 +110,18 @@ class BookingSlotNotifier extends AsyncNotifier<BookingSlotState> {
     ));
 
     try {
-      await _repository.createBooking(
+      final res = await _repository.createBooking(
         serviceId: serviceId,
         date: current.selectedDate,
         timeSlot: current.selectedSlot!.timeSlot,
         address: address,
         notes: notes ?? current.notes,
       );
+
+      final bookingMap = res['booking'] as Map<String, dynamic>?;
+      final bookingId = bookingMap?['_id']?.toString() ??
+          bookingMap?['id']?.toString() ??
+          res['bookingId']?.toString();
 
       // Refresh slots from server so newly booked slot is marked booked
       final updatedResponse = await _repository.getAvailableSlots(
@@ -131,7 +140,7 @@ class BookingSlotNotifier extends AsyncNotifier<BookingSlotState> {
           clearErrorMessage: true,
         ),
       );
-      return (success: true, message: null);
+      return (success: true, message: null, bookingId: bookingId);
     } on ApiException catch (e) {
       // If server returns an error (e.g. "This time slot is already booked..."),
       // immediately refresh slots from server to update booked status in UI
@@ -152,14 +161,14 @@ class BookingSlotNotifier extends AsyncNotifier<BookingSlotState> {
           errorMessage: e.message,
         ));
       }
-      return (success: false, message: e.message);
+      return (success: false, message: e.message, bookingId: null);
     } catch (e) {
       final msg = e.toString().replaceFirst('Exception: ', '');
       state = AsyncData(current.copyWith(
         isSubmitting: false,
         errorMessage: msg,
       ));
-      return (success: false, message: msg);
+      return (success: false, message: msg, bookingId: null);
     }
   }
 }
