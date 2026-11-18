@@ -14,4 +14,7 @@ class ApiEndPoints {
 
   // Service endpoints
   static const String services = '/api/services';
+
+  // AI Assistant endpoint
+  static const String aiChat = '/api/ai/chat';
 }

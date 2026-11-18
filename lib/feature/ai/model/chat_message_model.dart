@@ -2,15 +2,15 @@ class ChatMessageModel {
   final String id;
   final String text;
   final bool isUser;
-  final DateTime timestamp;
-  final String? suggestedCategory;
+  final DateTime? timestamp;
+  final bool isError;
 
   const ChatMessageModel({
     required this.id,
     required this.text,
     required this.isUser,
-    required this.timestamp,
-    this.suggestedCategory,
+    this.timestamp,
+    this.isError = false,
   });
 
   ChatMessageModel copyWith({
@@ -18,14 +18,14 @@ class ChatMessageModel {
     String? text,
     bool? isUser,
     DateTime? timestamp,
-    String? suggestedCategory,
+    bool? isError,
   }) {
     return ChatMessageModel(
       id: id ?? this.id,
       text: text ?? this.text,
       isUser: isUser ?? this.isUser,
       timestamp: timestamp ?? this.timestamp,
-      suggestedCategory: suggestedCategory ?? this.suggestedCategory,
+      isError: isError ?? this.isError,
     );
   }
 }

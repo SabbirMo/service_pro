@@ -5,7 +5,6 @@ import 'package:service_pro/core/theme/app_colors.dart';
 import 'package:service_pro/feature/ai/provider/ai_chat_notifier.dart';
 import 'package:service_pro/feature/ai/widgets/chat_bubble.dart';
 import 'package:service_pro/feature/ai/widgets/chat_input_bar.dart';
-import 'package:service_pro/feature/ai/widgets/quick_prompt_chips.dart';
 import 'package:service_pro/feature/ai/widgets/typing_indicator.dart';
 
 class AiScreen extends ConsumerStatefulWidget {
@@ -40,13 +39,11 @@ class _AiScreenState extends ConsumerState<AiScreen> {
     });
   }
 
-  void _handleSend([String? presetText]) {
-    final text = presetText ?? _textController.text;
-    if (text.trim().isEmpty) return;
+  void _handleSend() {
+    final text = _textController.text.trim();
+    if (text.isEmpty) return;
 
-    if (presetText == null) {
-      _textController.clear();
-    }
+    _textController.clear();
     ref.read(aiChatNotifierProvider.notifier).sendMessage(text);
     _scrollToBottom();
   }
@@ -64,19 +61,27 @@ class _AiScreenState extends ConsumerState<AiScreen> {
       appBar: AppBar(
         backgroundColor: AppColors.background,
         elevation: 0,
+        scrolledUnderElevation: 0,
         titleSpacing: 16.w,
         title: Row(
           children: [
             Container(
-              width: 36.w,
-              height: 36.w,
+              width: 38.w,
+              height: 38.w,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [AppColors.primary, AppColors.primaryLight],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(10.r),
+                borderRadius: BorderRadius.circular(12.r),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.28),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
               child: Icon(
                 Icons.auto_awesome_rounded,
@@ -89,9 +94,9 @@ class _AiScreenState extends ConsumerState<AiScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Service AI Assistant",
+                  "Service Pro AI",
                   style: TextStyle(
-                    fontSize: 16.sp,
+                    fontSize: 15.5.sp,
                     fontWeight: FontWeight.bold,
                     color: AppColors.textPrimary,
                   ),
@@ -109,7 +114,7 @@ class _AiScreenState extends ConsumerState<AiScreen> {
                     ),
                     SizedBox(width: 5.w),
                     Text(
-                      "Online • Ready to help",
+                      "Online • Gemini Powered",
                       style: TextStyle(
                         fontSize: 11.sp,
                         color: AppColors.textSecondary,
@@ -143,18 +148,11 @@ class _AiScreenState extends ConsumerState<AiScreen> {
               ),
             ),
 
-            // Quick Prompts Chips
-            if (aiState.quickPrompts.isNotEmpty && !aiState.isTyping)
-              QuickPromptChips(
-                prompts: aiState.quickPrompts,
-                onPromptSelected: _handleSend,
-              ),
-
             // Chat Input Bar
             ChatInputBar(
               controller: _textController,
               focusNode: _focusNode,
-              onSend: () => _handleSend(),
+              onSend: _handleSend,
               bottomPadding: isKeyboardOpen ? 4.h : 88.h,
             ),
           ],
