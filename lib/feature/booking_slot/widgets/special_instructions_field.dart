@@ -19,7 +19,7 @@ class SpecialInstructionsField extends StatelessWidget {
       children: [
         // Section Title
         Text(
-          "3. SPECIAL INSTRUCTIONS (OPTIONAL)",
+          "SPECIAL INSTRUCTIONS / NOTES (OPTIONAL)",
           style: TextStyle(
             fontSize: 13.5.sp,
             fontWeight: FontWeight.w800,

@@ -42,7 +42,7 @@ class DatePickerStrip extends StatelessWidget {
           children: [
             Expanded(
               child: Text(
-                "1. CHOOSE DATE ($monthName $year)",
+                "CHOOSE DATE ($monthName $year)",
                 style: TextStyle(
                   fontSize: 13.5.sp,
                   fontWeight: FontWeight.w800,

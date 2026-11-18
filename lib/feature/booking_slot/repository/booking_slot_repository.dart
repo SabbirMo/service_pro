@@ -40,12 +40,13 @@ class BookingSlotRepository {
     throw Exception('Invalid response format received from available-slots API');
   }
 
-  /// Optional: POST /api/bookings to confirm/create the booking
+  /// POST /api/bookings to confirm/create the booking
   Future<Map<String, dynamic>> createBooking({
     required String serviceId,
     required DateTime date,
     required String timeSlot,
-    String? specialInstructions,
+    required String address,
+    String? notes,
   }) async {
     final dateString = formatDate(date);
 
@@ -55,8 +56,8 @@ class BookingSlotRepository {
         'serviceId': serviceId,
         'date': dateString,
         'timeSlot': timeSlot,
-        if (specialInstructions != null && specialInstructions.trim().isNotEmpty)
-          'specialInstructions': specialInstructions.trim(),
+        'address': address.trim(),
+        if (notes != null) 'notes': notes.trim(),
       },
       requireAuth: true,
     );

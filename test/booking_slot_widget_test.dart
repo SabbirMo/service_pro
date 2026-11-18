@@ -32,7 +32,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('1. CHOOSE DATE'), findsOneWidget);
+    expect(find.textContaining('CHOOSE DATE'), findsOneWidget);
     expect(find.textContaining('NOV 2026'), findsOneWidget);
   });
 
@@ -60,8 +60,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('2. AVAILABLE TIME SLOTS'), findsOneWidget);
-    expect(find.text('Grey = Booked'), findsOneWidget);
+    expect(find.text('AVAILABLE TIME SLOTS'), findsOneWidget);
+    expect(find.textContaining('available'), findsOneWidget);
     expect(find.text('09:00 AM'), findsOneWidget);
     expect(find.text('11:00 AM'), findsOneWidget);
     expect(find.text('01:00 PM'), findsOneWidget);
@@ -93,7 +93,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('3. SPECIAL INSTRUCTIONS (OPTIONAL)'), findsOneWidget);
+    expect(find.text('SPECIAL INSTRUCTIONS / NOTES (OPTIONAL)'), findsOneWidget);
     expect(find.text('Confirm Booking • \$45'), findsOneWidget);
 
     await tester.tap(find.text('Confirm Booking • \$45'));

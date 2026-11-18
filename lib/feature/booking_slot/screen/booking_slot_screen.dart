@@ -4,13 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:service_pro/core/theme/app_colors.dart';
+import 'package:service_pro/feature/booking_slot/model/available_slot_model.dart';
 import 'package:service_pro/feature/booking_slot/provider/booking_slot_notifier.dart';
 import 'package:service_pro/feature/booking_slot/widgets/booking_bottom_bar.dart';
-import 'package:service_pro/feature/booking_slot/widgets/booking_confirmation_sheet.dart';
 import 'package:service_pro/feature/booking_slot/widgets/date_picker_strip.dart';
+import 'package:service_pro/feature/booking_slot/widgets/service_address_field.dart';
 import 'package:service_pro/feature/booking_slot/widgets/special_instructions_field.dart';
 import 'package:service_pro/feature/booking_slot/widgets/time_slot_grid.dart';
 import 'package:service_pro/feature/home/model/service_model.dart';
+import 'package:service_pro/feature/profile/provider/profile_notifier.dart';
+import 'package:service_pro/router/app_page_name.dart';
 
 class BookingSlotScreen extends ConsumerStatefulWidget {
   final ServiceModel service;
@@ -25,44 +28,175 @@ class BookingSlotScreen extends ConsumerStatefulWidget {
 }
 
 class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
-  late final TextEditingController _instructionsController;
+  late final TextEditingController _addressController;
+  late final TextEditingController _notesController;
 
   @override
   void initState() {
     super.initState();
-    _instructionsController = TextEditingController();
+    _addressController = TextEditingController();
+    _notesController = TextEditingController();
+
+    // Prefill with user's real saved profile address if available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final profileState = ref.read(profileNotifierProvider);
+      final savedAddress = profileState.user.address;
+      if (savedAddress.isNotEmpty && _addressController.text.isEmpty) {
+        _addressController.text = savedAddress;
+      }
+    });
   }
 
   @override
   void dispose() {
-    _instructionsController.dispose();
+    _addressController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
-  void _openConfirmationSheet() {
+  Future<void> _handleConfirmBooking() async {
     final state =
         ref.read(bookingSlotNotifierProvider(widget.service.id)).value;
     if (state == null) return;
-    final selectedSlot = state.selectedSlot;
-    if (selectedSlot == null) return;
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => BookingConfirmationSheet(
-        service: widget.service,
-        date: state.selectedDate,
-        slot: selectedSlot,
-        specialInstructions: _instructionsController.text,
-        onConfirm: () async {
-          final notifier =
-              ref.read(bookingSlotNotifierProvider(widget.service.id).notifier);
-          notifier.setSpecialInstructions(_instructionsController.text);
-          return await notifier.confirmBooking();
-        },
-      ),
+    final selectedSlot = state.selectedSlot;
+    if (selectedSlot == null) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                CupertinoIcons.info_circle_fill,
+                color: Colors.white,
+                size: 20,
+              ),
+              SizedBox(width: 10.w),
+              const Expanded(
+                child: Text(
+                  "Please select an available time slot first.",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final enteredAddress = _addressController.text.trim();
+    if (enteredAddress.isEmpty) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                CupertinoIcons.exclamationmark_circle_fill,
+                color: Colors.white,
+                size: 20,
+              ),
+              SizedBox(width: 10.w),
+              const Expanded(
+                child: Text(
+                  "Please enter your service address before booking.",
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.r),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final enteredNotes = _notesController.text.trim();
+    final notifier =
+        ref.read(bookingSlotNotifierProvider(widget.service.id).notifier);
+
+    final result = await notifier.confirmBooking(
+      address: enteredAddress,
+      notes: enteredNotes,
     );
+
+    if (!mounted) return;
+
+    if (result.success) {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                CupertinoIcons.checkmark_circle_fill,
+                color: Colors.white,
+                size: 20,
+              ),
+              SizedBox(width: 10.w),
+              const Expanded(
+                child: Text(
+                  "Booking confirmed successfully!",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      context.go(AppPageName.dashboardScreen);
+    } else {
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                CupertinoIcons.exclamationmark_circle_fill,
+                color: Colors.white,
+                size: 20,
+              ),
+              SizedBox(width: 10.w),
+              Expanded(
+                child: Text(
+                  result.message ??
+                      "Failed to confirm booking. Please choose another slot.",
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFDC2626),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   @override
@@ -168,7 +302,7 @@ class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. Choose Date
+                  // Choose Date
                   DatePickerStrip(
                     selectedDate: selectedDate,
                     onDateSelected: (newDate) {
@@ -176,9 +310,9 @@ class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
                     },
                   ),
 
-                  SizedBox(height: 26.h),
+                  SizedBox(height: 24.h),
 
-                  // 2. Available Time Slots
+                  // Available Time Slots
                   TimeSlotGrid(
                     slots: slots,
                     selectedSlot: selectedSlot,
@@ -192,13 +326,23 @@ class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
                     },
                   ),
 
-                  SizedBox(height: 26.h),
+                  SizedBox(height: 24.h),
 
-                  // 3. Special Instructions
-                  SpecialInstructionsField(
-                    controller: _instructionsController,
+                  // Service Address
+                  ServiceAddressField(
+                    controller: _addressController,
                     onChanged: (val) {
-                      slotNotifier.setSpecialInstructions(val);
+                      slotNotifier.setAddress(val);
+                    },
+                  ),
+
+                  SizedBox(height: 24.h),
+
+                  // Notes / Special Instructions
+                  SpecialInstructionsField(
+                    controller: _notesController,
+                    onChanged: (val) {
+                      slotNotifier.setNotes(val);
                     },
                   ),
 
@@ -213,7 +357,7 @@ class _BookingSlotScreenState extends ConsumerState<BookingSlotScreen> {
             price: widget.service.price,
             selectedSlot: selectedSlot,
             isSubmitting: isSubmitting,
-            onConfirm: _openConfirmationSheet,
+            onConfirm: _handleConfirmBooking,
           ),
         ],
       ),

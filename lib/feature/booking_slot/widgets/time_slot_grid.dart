@@ -34,69 +34,62 @@ class TimeSlotGrid extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Expanded(
-              child: Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      "2. AVAILABLE TIME SLOTS",
-                      style: TextStyle(
-                        fontSize: 13.5.sp,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.6,
-                        color: const Color(0xFF334155),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (!isLoading && slots.isNotEmpty) ...[
-                    SizedBox(width: 8.w),
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.5.h),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFDCFCE7),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(
-                          color: const Color(0xFF86EFAC).withValues(alpha: 0.5),
-                          width: 0.8,
-                        ),
-                      ),
-                      child: Text(
-                        "$availableCount available",
-                        style: TextStyle(
-                          fontSize: 11.sp,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF15803D),
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
+              child: Text(
+                "AVAILABLE TIME SLOTS",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13.5.sp,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: 0.6,
+                  color: const Color(0xFF334155),
+                ),
               ),
             ),
             SizedBox(width: 8.w),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 7.r,
-                  height: 7.r,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF94A3B8),
-                    shape: BoxShape.circle,
+            if (!isLoading && slots.isNotEmpty)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(
+                    color: const Color(0xFF86EFAC).withValues(alpha: 0.5),
+                    width: 0.8,
                   ),
                 ),
-                SizedBox(width: 4.w),
-                Text(
-                  "Grey = Booked",
+                child: Text(
+                  "$availableCount available",
                   style: TextStyle(
-                    fontSize: 11.5.sp,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF94A3B8),
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF15803D),
                   ),
                 ),
-              ],
-            ),
+              )
+            else
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 7.r,
+                    height: 7.r,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF94A3B8),
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    "Grey = Booked",
+                    style: TextStyle(
+                      fontSize: 11.5.sp,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF94A3B8),
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
 

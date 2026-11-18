@@ -4,17 +4,21 @@ class BookingSlotState {
   final DateTime selectedDate;
   final AvailableSlotModel? selectedSlot;
   final List<AvailableSlotModel> slots;
-  final String specialInstructions;
+  final String address;
+  final String notes;
   final bool isSubmitting;
   final bool bookingSuccess;
+  final String? errorMessage;
 
   const BookingSlotState({
     required this.selectedDate,
     this.selectedSlot,
     this.slots = const [],
-    this.specialInstructions = '',
+    this.address = '',
+    this.notes = '',
     this.isSubmitting = false,
     this.bookingSuccess = false,
+    this.errorMessage,
   });
 
   BookingSlotState copyWith({
@@ -22,17 +26,22 @@ class BookingSlotState {
     AvailableSlotModel? selectedSlot,
     bool clearSelectedSlot = false,
     List<AvailableSlotModel>? slots,
-    String? specialInstructions,
+    String? address,
+    String? notes,
     bool? isSubmitting,
     bool? bookingSuccess,
+    String? errorMessage,
+    bool clearErrorMessage = false,
   }) {
     return BookingSlotState(
       selectedDate: selectedDate ?? this.selectedDate,
       selectedSlot: clearSelectedSlot ? null : (selectedSlot ?? this.selectedSlot),
       slots: slots ?? this.slots,
-      specialInstructions: specialInstructions ?? this.specialInstructions,
+      address: address ?? this.address,
+      notes: notes ?? this.notes,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       bookingSuccess: bookingSuccess ?? this.bookingSuccess,
+      errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
     );
   }
 }

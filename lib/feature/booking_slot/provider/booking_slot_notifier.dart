@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:service_pro/core/network/error/api_error_handler.dart';
 import 'package:service_pro/feature/booking_slot/model/available_slot_model.dart';
 import 'package:service_pro/feature/booking_slot/model/booking_slot_state.dart';
 import 'package:service_pro/feature/booking_slot/repository/booking_slot_repository.dart';
@@ -75,35 +76,90 @@ class BookingSlotNotifier extends AsyncNotifier<BookingSlotState> {
     state = AsyncData(current.copyWith(selectedSlot: slot));
   }
 
-  /// Update special instructions
-  void setSpecialInstructions(String instructions) {
+  /// Update service address
+  void setAddress(String address) {
     final current = state.value;
     if (current == null) return;
-    state = AsyncData(current.copyWith(specialInstructions: instructions));
+    state = AsyncData(current.copyWith(address: address));
   }
 
-  /// Submit / Confirm booking
-  Future<bool> confirmBooking() async {
+  /// Update notes / special instructions
+  void setNotes(String notes) {
     final current = state.value;
-    if (current == null || current.selectedSlot == null) return false;
+    if (current == null) return;
+    state = AsyncData(current.copyWith(notes: notes));
+  }
 
-    state = AsyncData(current.copyWith(isSubmitting: true));
+  /// Submit / Confirm booking: POST /api/bookings
+  Future<({bool success, String? message})> confirmBooking({
+    required String address,
+    String? notes,
+  }) async {
+    final current = state.value;
+    if (current == null || current.selectedSlot == null) {
+      return (success: false, message: 'Please select an available time slot.');
+    }
+
+    state = AsyncData(current.copyWith(
+      isSubmitting: true,
+      clearErrorMessage: true,
+    ));
 
     try {
       await _repository.createBooking(
         serviceId: serviceId,
         date: current.selectedDate,
         timeSlot: current.selectedSlot!.timeSlot,
-        specialInstructions: current.specialInstructions,
+        address: address,
+        notes: notes ?? current.notes,
+      );
+
+      // Refresh slots from server so newly booked slot is marked booked
+      final updatedResponse = await _repository.getAvailableSlots(
+        serviceId: serviceId,
+        date: current.selectedDate,
       );
 
       state = AsyncData(
-        current.copyWith(isSubmitting: false, bookingSuccess: true),
+        current.copyWith(
+          slots: updatedResponse.slots,
+          address: address,
+          notes: notes ?? current.notes,
+          isSubmitting: false,
+          bookingSuccess: true,
+          clearSelectedSlot: true,
+          clearErrorMessage: true,
+        ),
       );
-      return true;
+      return (success: true, message: null);
+    } on ApiException catch (e) {
+      // If server returns an error (e.g. "This time slot is already booked..."),
+      // immediately refresh slots from server to update booked status in UI
+      try {
+        final updatedResponse = await _repository.getAvailableSlots(
+          serviceId: serviceId,
+          date: current.selectedDate,
+        );
+        state = AsyncData(current.copyWith(
+          slots: updatedResponse.slots,
+          isSubmitting: false,
+          errorMessage: e.message,
+          clearSelectedSlot: true,
+        ));
+      } catch (_) {
+        state = AsyncData(current.copyWith(
+          isSubmitting: false,
+          errorMessage: e.message,
+        ));
+      }
+      return (success: false, message: e.message);
     } catch (e) {
-      state = AsyncData(current.copyWith(isSubmitting: false));
-      rethrow;
+      final msg = e.toString().replaceFirst('Exception: ', '');
+      state = AsyncData(current.copyWith(
+        isSubmitting: false,
+        errorMessage: msg,
+      ));
+      return (success: false, message: msg);
     }
   }
 }
