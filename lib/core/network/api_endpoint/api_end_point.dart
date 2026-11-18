@@ -15,6 +15,10 @@ class ApiEndPoints {
   // Service endpoints
   static const String services = '/api/services';
 
+  // Booking endpoints
+  static const String availableSlots = '/api/bookings/available-slots';
+  static const String bookings = '/api/bookings';
+
   // AI Assistant endpoint
   static const String aiChat = '/api/ai/chat';
 }

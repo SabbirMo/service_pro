@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:service_pro/core/theme/app_colors.dart';
+import 'package:service_pro/core/widgets/custom_button.dart';
+import 'package:service_pro/feature/dashboard/provider/dashboard_notifier.dart';
 
-class BookingScreen extends StatelessWidget {
+class BookingScreen extends ConsumerWidget {
   const BookingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
@@ -59,6 +62,17 @@ class BookingScreen extends StatelessWidget {
                   color: AppColors.textSecondary,
                   height: 1.4,
                 ),
+              ),
+              SizedBox(height: 20.h),
+              CustomButton(
+                text: "Explore Services",
+                width: 170.w,
+                height: 42.h,
+                borderRadius: 12.r,
+                fontSize: 13.5.sp,
+                onPressed: () {
+                  ref.read(dashboardNotifierProvider.notifier).setIndex(0);
+                },
               ),
             ],
           ),
