@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:service_pro/core/theme/app_colors.dart';
+import 'package:service_pro/feature/booking/provider/booking_notifier.dart';
 import 'package:service_pro/feature/booking/widgets/booking_status_badge.dart';
 import 'package:service_pro/feature/dashboard/provider/dashboard_notifier.dart';
 import 'package:service_pro/router/app_page_name.dart';
@@ -113,7 +114,7 @@ class BookingSuccessDialog extends ConsumerWidget {
                 children: [
                   if (bookingId != null && bookingId!.isNotEmpty) ...[
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
                           "Booking ID",
@@ -122,12 +123,18 @@ class BookingSuccessDialog extends ConsumerWidget {
                             color: const Color(0xFF64748B),
                           ),
                         ),
-                        Text(
-                          "#${bookingId!.length > 8 ? bookingId!.substring(bookingId!.length - 8) : bookingId}",
-                          style: TextStyle(
-                            fontSize: 12.sp,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.textPrimary,
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            "#${bookingId!.length > 8 ? bookingId!.substring(bookingId!.length - 8) : bookingId}",
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -135,7 +142,7 @@ class BookingSuccessDialog extends ConsumerWidget {
                     Divider(height: 14.h, color: const Color(0xFFE2E8F0)),
                   ],
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         "Service",
@@ -144,6 +151,7 @@ class BookingSuccessDialog extends ConsumerWidget {
                           color: const Color(0xFF64748B),
                         ),
                       ),
+                      SizedBox(width: 12.w),
                       Expanded(
                         child: Text(
                           serviceName,
@@ -153,7 +161,7 @@ class BookingSuccessDialog extends ConsumerWidget {
                             fontWeight: FontWeight.w700,
                             color: AppColors.textPrimary,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -161,7 +169,7 @@ class BookingSuccessDialog extends ConsumerWidget {
                   ),
                   Divider(height: 14.h, color: const Color(0xFFE2E8F0)),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Text(
                         "Date & Time",
@@ -170,12 +178,18 @@ class BookingSuccessDialog extends ConsumerWidget {
                           color: const Color(0xFF64748B),
                         ),
                       ),
-                      Text(
-                        "$date • $timeSlot",
-                        style: TextStyle(
-                          fontSize: 12.sp,
-                          fontWeight: FontWeight.w700,
-                          color: const Color(0xFF1E56A0),
+                      SizedBox(width: 12.w),
+                      Expanded(
+                        child: Text(
+                          "$date • $timeSlot",
+                          textAlign: TextAlign.end,
+                          style: TextStyle(
+                            fontSize: 12.sp,
+                            fontWeight: FontWeight.w700,
+                            color: const Color(0xFF1E56A0),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -215,6 +229,7 @@ class BookingSuccessDialog extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).pop();
                   ref.read(dashboardNotifierProvider.notifier).setIndex(1);
+                  ref.read(bookingNotifierProvider.notifier).loadAll(showLoader: false);
                   context.go(AppPageName.dashboardScreen);
                 },
                 child: Text(

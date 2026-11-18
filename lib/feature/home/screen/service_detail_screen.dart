@@ -19,8 +19,9 @@ class ServiceDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectiveHeroTag =
-        heroTag.isNotEmpty ? heroTag : 'service_img_${service.id}';
+    final effectiveHeroTag = heroTag.isNotEmpty
+        ? heroTag
+        : 'service_img_${service.id}';
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -44,7 +45,7 @@ class ServiceDetailScreen extends StatelessWidget {
                     onTap: () => context.pop(),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
+                        color: Colors.white.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -56,7 +57,7 @@ class ServiceDetailScreen extends StatelessWidget {
                       ),
                       child: Icon(
                         CupertinoIcons.chevron_back,
-                        color: AppColors.textPrimary,
+                        color: AppColors.white,
                         size: 20.sp,
                       ),
                     ),
@@ -113,7 +114,9 @@ class ServiceDetailScreen extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                CategoryModel.getIconForCategory(service.category),
+                                CategoryModel.getIconForCategory(
+                                  service.category,
+                                ),
                                 size: 14.sp,
                                 color: Colors.white,
                               ),
@@ -229,10 +232,14 @@ class ServiceDetailScreen extends StatelessWidget {
                             child: Container(
                               padding: EdgeInsets.all(14.r),
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.06),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.06,
+                                ),
                                 borderRadius: BorderRadius.circular(16.r),
                                 border: Border.all(
-                                  color: AppColors.primary.withValues(alpha: 0.18),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.18,
+                                  ),
                                 ),
                               ),
                               child: Column(
@@ -263,10 +270,14 @@ class ServiceDetailScreen extends StatelessWidget {
                             child: Container(
                               padding: EdgeInsets.all(14.r),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.06),
+                                color: const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(16.r),
                                 border: Border.all(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.18),
+                                  color: const Color(
+                                    0xFF10B981,
+                                  ).withValues(alpha: 0.18),
                                 ),
                               ),
                               child: Column(

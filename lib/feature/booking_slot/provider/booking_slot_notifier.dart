@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:service_pro/core/network/error/api_error_handler.dart';
+import 'package:service_pro/feature/booking/provider/booking_notifier.dart';
 import 'package:service_pro/feature/booking_slot/model/available_slot_model.dart';
 import 'package:service_pro/feature/booking_slot/model/booking_slot_state.dart';
 import 'package:service_pro/feature/booking_slot/repository/booking_slot_repository.dart';
@@ -140,6 +141,12 @@ class BookingSlotNotifier extends AsyncNotifier<BookingSlotState> {
           clearErrorMessage: true,
         ),
       );
+
+      // Invalidate and refresh all bookings so Upcoming tab immediately has the new booking
+      try {
+        ref.read(bookingNotifierProvider.notifier).loadAll(showLoader: false);
+      } catch (_) {}
+
       return (success: true, message: null, bookingId: bookingId);
     } on ApiException catch (e) {
       // If server returns an error (e.g. "This time slot is already booked..."),

@@ -24,4 +24,11 @@ class ApiEndPoints {
 
   // AI Assistant endpoint
   static const String aiChat = '/api/ai/chat';
+
+  // Notification endpoints
+  static const String notifications = '/api/notifications';
+  static String markNotificationAsRead(String id) =>
+      '/api/notifications/$id/read';
+  static const String markAllNotificationsAsRead =
+      '/api/notifications/read-all';
 }

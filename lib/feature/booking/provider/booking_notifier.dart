@@ -75,10 +75,10 @@ class BookingNotifier extends Notifier<BookingState> {
     }
   }
 
-  Future<void> loadAll() async {
+  Future<void> loadAll({bool showLoader = true}) async {
     await Future.wait([
-      loadUpcoming(),
-      loadPrevious(),
+      loadUpcoming(showLoader: showLoader),
+      loadPrevious(showLoader: showLoader),
     ]);
   }
 

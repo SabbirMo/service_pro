@@ -10,10 +10,72 @@ import 'package:service_pro/feature/booking_slot/screen/booking_slot_screen.dart
 import 'package:service_pro/feature/dashboard/screen/dashboard_screen.dart';
 import 'package:service_pro/feature/home/model/service_model.dart';
 import 'package:service_pro/feature/home/screen/service_detail_screen.dart';
+import 'package:service_pro/feature/notification/screen/notification_screen.dart';
 import 'package:service_pro/feature/profile/screen/change_password_screen.dart';
 import 'package:service_pro/feature/profile/screen/edit_profile_screen.dart';
 import 'package:service_pro/feature/splash/splash_screen.dart';
 import 'package:service_pro/router/app_page_name.dart';
+
+/// Safely extracts or deserializes [ServiceModel] from any parameter format.
+ServiceModel? _extractServiceModel(dynamic extra) {
+  if (extra == null) return null;
+
+  if (extra is ServiceModel) {
+    return extra;
+  }
+
+  if (extra is BookingServiceModel) {
+    return ServiceModel(
+      id: extra.id,
+      name: extra.name,
+      description: extra.description,
+      category: extra.category,
+      price: extra.price,
+      durationMinutes: extra.durationMinutes,
+      image: extra.image,
+      isFeatured: false,
+      rating: extra.rating,
+      reviewCount: 0,
+    );
+  }
+
+  if (extra is Map) {
+    // 1. Check if it's wrapped in {'service': ..., 'heroTag': ...}
+    final rawService = extra['service'];
+    if (rawService is ServiceModel) {
+      return rawService;
+    }
+    if (rawService is BookingServiceModel) {
+      return ServiceModel(
+        id: rawService.id,
+        name: rawService.name,
+        description: rawService.description,
+        category: rawService.category,
+        price: rawService.price,
+        durationMinutes: rawService.durationMinutes,
+        image: rawService.image,
+        isFeatured: false,
+        rating: rawService.rating,
+        reviewCount: 0,
+      );
+    }
+    if (rawService is Map) {
+      return ServiceModel.fromJson(Map<String, dynamic>.from(rawService));
+    }
+
+    // 2. The map itself represents the service
+    return ServiceModel.fromJson(Map<String, dynamic>.from(extra));
+  }
+
+  return null;
+}
+
+String _extractHeroTag(dynamic extra) {
+  if (extra is Map && extra['heroTag'] != null) {
+    return extra['heroTag'].toString();
+  }
+  return '';
+}
 
 // ignore: non_constant_identifier_names
 final AppPages = Provider<GoRouter>((ref) {
@@ -53,43 +115,61 @@ final AppPages = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppPageName.serviceDetailScreen,
         pageBuilder: (context, state) {
-          if (state.extra is Map<String, dynamic>) {
-            final map = state.extra as Map<String, dynamic>;
+          final service = _extractServiceModel(state.extra);
+          final heroTag = _extractHeroTag(state.extra);
+
+          if (service != null) {
             return CupertinoPage(
               key: state.pageKey,
               child: ServiceDetailScreen(
-                service: map['service'] as ServiceModel,
-                heroTag: map['heroTag'] as String? ?? '',
+                service: service,
+                heroTag: heroTag,
               ),
             );
           }
-          final service = state.extra as ServiceModel;
+
           return CupertinoPage(
             key: state.pageKey,
-            child: ServiceDetailScreen(service: service),
+            child: Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                  icon: const Icon(CupertinoIcons.arrow_left),
+                  onPressed: () => context.pop(),
+                ),
+                title: const Text("Service Details"),
+              ),
+              body: const Center(
+                child: Text(
+                  "Service details not found. Please select a service from Home.",
+                ),
+              ),
+            ),
           );
         },
       ),
       GoRoute(
         path: AppPageName.bookingSlotScreen,
         pageBuilder: (context, state) {
-          if (state.extra is ServiceModel) {
-            return CupertinoPage(
-              key: state.pageKey,
-              child: BookingSlotScreen(service: state.extra as ServiceModel),
-            );
-          } else if (state.extra is Map<String, dynamic>) {
-            final map = state.extra as Map<String, dynamic>;
-            final service = ServiceModel.fromJson(map);
+          final service = _extractServiceModel(state.extra);
+
+          if (service != null) {
             return CupertinoPage(
               key: state.pageKey,
               child: BookingSlotScreen(service: service),
             );
           }
+
           return CupertinoPage(
             key: state.pageKey,
-            child: const Scaffold(
-              body: Center(
+            child: Scaffold(
+              appBar: AppBar(
+                leading: IconButton(
+                  icon: const Icon(CupertinoIcons.arrow_left),
+                  onPressed: () => context.pop(),
+                ),
+                title: const Text("Book Service"),
+              ),
+              body: const Center(
                 child: Text(
                   "No service selected. Please choose a service to book.",
                 ),
@@ -110,10 +190,26 @@ final AppPages = Provider<GoRouter>((ref) {
           } else if (extra is BookingModel) {
             bookingId = extra.id;
             initialBooking = extra;
-          } else if (extra is Map<String, dynamic>) {
-            bookingId = (extra['bookingId'] ?? extra['id'] ?? '').toString();
-            if (extra['booking'] is BookingModel) {
-              initialBooking = extra['booking'] as BookingModel;
+          } else if (extra is Map) {
+            final map = Map<String, dynamic>.from(extra);
+            bookingId =
+                (map['bookingId'] ?? map['id'] ?? map['_id'] ?? '').toString();
+            if (map['booking'] is BookingModel) {
+              initialBooking = map['booking'] as BookingModel;
+            } else if (map['booking'] is Map) {
+              try {
+                initialBooking = BookingModel.fromJson(
+                  Map<String, dynamic>.from(map['booking'] as Map),
+                );
+              } catch (_) {}
+            } else if (map.containsKey('status') ||
+                map.containsKey('service')) {
+              try {
+                initialBooking = BookingModel.fromJson(map);
+                if (bookingId.isEmpty) {
+                  bookingId = initialBooking.id;
+                }
+              } catch (_) {}
             }
           }
 
@@ -125,6 +221,11 @@ final AppPages = Provider<GoRouter>((ref) {
             ),
           );
         },
+      ),
+      GoRoute(
+        path: AppPageName.notificationScreen,
+        pageBuilder: (context, state) =>
+            CupertinoPage(key: state.pageKey, child: const NotificationScreen()),
       ),
     ],
     errorBuilder: (context, state) =>

@@ -22,23 +22,26 @@ class BookingServiceModel {
   });
 
   factory BookingServiceModel.fromJson(dynamic json) {
+    if (json == null) {
+      return const BookingServiceModel();
+    }
     if (json is String) {
       return BookingServiceModel(id: json);
     }
-    if (json is! Map<String, dynamic>) {
-      return const BookingServiceModel();
+    if (json is Map) {
+      final map = Map<String, dynamic>.from(json);
+      return BookingServiceModel(
+        id: (map['_id'] ?? map['id'] ?? '').toString(),
+        name: (map['name'] ?? map['serviceName'] ?? '').toString(),
+        category: (map['category'] ?? '').toString(),
+        price: (map['price'] as num?)?.toDouble() ?? 0.0,
+        durationMinutes: (map['durationMinutes'] as num?)?.toInt() ?? 0,
+        image: (map['image'] ?? map['imageUrl'] ?? '').toString(),
+        description: (map['description'] ?? '').toString(),
+        rating: (map['rating'] as num?)?.toDouble() ?? 0.0,
+      );
     }
-
-    return BookingServiceModel(
-      id: (json['_id'] ?? json['id'] ?? '').toString(),
-      name: (json['name'] ?? '').toString(),
-      category: (json['category'] ?? '').toString(),
-      price: (json['price'] as num?)?.toDouble() ?? 0.0,
-      durationMinutes: (json['durationMinutes'] as num?)?.toInt() ?? 0,
-      image: (json['image'] ?? '').toString(),
-      description: (json['description'] ?? '').toString(),
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-    );
+    return const BookingServiceModel();
   }
 
   Map<String, dynamic> toJson() {
@@ -235,8 +238,8 @@ class MyBookingsResponseModel {
   factory MyBookingsResponseModel.fromJson(Map<String, dynamic> json) {
     final rawList = json['bookings'] as List? ?? [];
     final list = rawList
-        .whereType<Map<String, dynamic>>()
-        .map((e) => BookingModel.fromJson(e))
+        .whereType<Map>()
+        .map((e) => BookingModel.fromJson(Map<String, dynamic>.from(e)))
         .toList();
 
     return MyBookingsResponseModel(
@@ -257,11 +260,12 @@ class SingleBookingResponseModel {
   });
 
   factory SingleBookingResponseModel.fromJson(Map<String, dynamic> json) {
+    final bookingData = json['booking'] is Map
+        ? Map<String, dynamic>.from(json['booking'] as Map)
+        : json;
     return SingleBookingResponseModel(
       success: json['success'] as bool? ?? true,
-      booking: BookingModel.fromJson(
-        json['booking'] as Map<String, dynamic>? ?? json,
-      ),
+      booking: BookingModel.fromJson(bookingData),
     );
   }
 }
