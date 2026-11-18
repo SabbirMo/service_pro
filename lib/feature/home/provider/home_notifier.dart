@@ -37,17 +37,13 @@ class HomeNotifier extends Notifier<HomeState> {
     });
 
     // 2. Fetch all categories and first page of services
-    final servicesFuture = _repository.getServices(page: 1, limit: state.limit).then((response) async {
-      // Also fetch full categories if needed
+    final servicesFuture = _repository.getServices(page: 1, limit: state.limit).then((response) {
       final dynamicCategories = <String>['All'];
       for (final group in response.data) {
         if (group.category.isNotEmpty && !dynamicCategories.contains(group.category)) {
           dynamicCategories.add(group.category);
         }
       }
-
-      // If there are more categories across all pages, fetch them in the background
-      _fetchAllCategoriesInBackground(dynamicCategories);
 
       state = state.copyWith(
         isLoading: false,
@@ -67,21 +63,6 @@ class HomeNotifier extends Notifier<HomeState> {
     });
 
     await Future.wait([featuredFuture, servicesFuture]);
-  }
-
-  Future<void> _fetchAllCategoriesInBackground(List<String> currentCategories) async {
-    try {
-      final allRes = await _repository.getServices();
-      final updatedCategories = <String>['All'];
-      for (final group in allRes.data) {
-        if (group.category.isNotEmpty && !updatedCategories.contains(group.category)) {
-          updatedCategories.add(group.category);
-        }
-      }
-      if (updatedCategories.length > currentCategories.length) {
-        state = state.copyWith(categories: updatedCategories);
-      }
-    } catch (_) {}
   }
 
   /// Select a category tab (resets to page 1)
@@ -208,8 +189,18 @@ class HomeNotifier extends Notifier<HomeState> {
         limit: state.limit,
       );
 
-      // Append new services
-      final newServices = response.allServices;
+      // Deduplicate new services
+      final existingIds = state.services.map((s) => s.id).toSet();
+      final newServices = response.allServices.where((s) => !existingIds.contains(s.id)).toList();
+
+      // Collect any newly discovered categories
+      final updatedCategories = List<String>.from(state.categories);
+      for (final group in response.data) {
+        if (group.category.isNotEmpty && !updatedCategories.contains(group.category)) {
+          updatedCategories.add(group.category);
+        }
+      }
+
       state = state.copyWith(
         isLoadingMore: false,
         currentPage: response.pagination.currentPage,
@@ -218,6 +209,7 @@ class HomeNotifier extends Notifier<HomeState> {
         hasNextPage: response.pagination.hasNextPage,
         services: [...state.services, ...newServices],
         categoryGroups: [...state.categoryGroups, ...response.data],
+        categories: updatedCategories,
       );
     } catch (e) {
       state = state.copyWith(isLoadingMore: false);

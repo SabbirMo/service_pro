@@ -13,7 +13,7 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final heroTag = 'service_all_${service.id}';
+    final heroTag = 'service_all_${service.id.isNotEmpty ? service.id : service.name.hashCode}';
 
     return GestureDetector(
       onTap: () {
@@ -62,13 +62,6 @@ class ServiceCard extends StatelessWidget {
                             if (loadingProgress == null) return child;
                             return Container(
                               color: AppColors.border.withValues(alpha: 0.3),
-                              child: const Center(
-                                child: SizedBox(
-                                  width: 18,
-                                  height: 18,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
-                                ),
-                              ),
                             );
                           },
                           errorBuilder: (context, error, stackTrace) =>

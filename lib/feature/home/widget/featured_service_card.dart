@@ -18,7 +18,7 @@ class FeaturedServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final heroTag = 'service_feat_${service.id}';
+    final heroTag = 'service_feat_${service.id.isNotEmpty ? service.id : index}';
 
     return GestureDetector(
       onTap: () {
@@ -58,17 +58,7 @@ class FeaturedServiceCard extends StatelessWidget {
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return Container(
-                            color: AppColors.textDark,
-                            child: const Center(
-                              child: SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
+                            color: AppColors.textDark.withValues(alpha: 0.8),
                           );
                         },
                         errorBuilder: (context, error, stackTrace) =>

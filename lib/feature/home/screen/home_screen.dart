@@ -24,24 +24,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.hasClients &&
-        _scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 150) {
-      ref.read(homeNotifierProvider.notifier).loadMoreServices();
-    }
   }
 
   @override
@@ -61,15 +46,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               homeNotifier.refresh(),
             ]);
           },
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          child: NotificationListener<ScrollNotification>(
+            onNotification: (scrollInfo) {
+              if (scrollInfo is ScrollUpdateNotification &&
+                  scrollInfo.metrics.pixels > 100 &&
+                  scrollInfo.metrics.pixels >=
+                      scrollInfo.metrics.maxScrollExtent - 100 &&
+                  !homeState.isLoadingMore &&
+                  !homeState.isLoading &&
+                  homeState.hasNextPage) {
+                homeNotifier.loadMoreServices();
+              }
+              return false;
+            },
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 14.h),
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 // Top Header: User Greeting & Notifications
                 HeaderWidget(profileState: profileState),
 
@@ -304,6 +302,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
           ),
+        ),
         ),
       ),
     );
